@@ -146,8 +146,7 @@ def test_stubs_raise_not_implemented() -> None:
         read_vf_traces(Path("traces.jsonl"))
     with pytest.raises(NotImplementedError):
         iter_chunked_jsonl(Path("."))
-    with pytest.raises(NotImplementedError):
-        assign_family(_rollout(), FamilySpec())
+    assert assign_family(_rollout(), FamilySpec()) == "env"
     with pytest.raises(NotImplementedError):
         dead_rate_binary(8, 16, 8)
     with pytest.raises(NotImplementedError):
