@@ -1,0 +1,47 @@
+[project]
+name = "grpo-signal"
+version = "0.1.0"
+description = "Pre-launch signal audit for GRPO training on prime-rl and verifiers traces."
+readme = "README.md"
+authors = [
+    { name = "JP Zarza", email = "jpzarza@icloud.com" },
+]
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+    # prime-rl seals finished trace chunks as seekable .jsonl.zst
+    "zstandard",
+]
+
+[project.scripts]
+grpo-signal = "grpo_signal.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.13.8,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pyright",
+    "pytest",
+    "ruff",
+]
+
+[tool.ruff]
+target-version = "py311"
+src = ["src", "tests"]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["grpo_signal"]
+
+[tool.pyright]
+include = ["src"]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
