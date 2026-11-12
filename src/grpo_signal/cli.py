@@ -5,6 +5,13 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from grpo_signal.readers.families import (
+    FamilyAssigner,
+    FamilyConfig,
+    FamilyConfigError,
+    from_config,
+)
+
 _NOT_IMPLEMENTED = "not implemented yet"
 
 
@@ -76,8 +83,8 @@ def _build_parser() -> argparse.ArgumentParser:
     family.add_argument(
         "--family-map",
         type=Path,
-        metavar="CSV",
-        help="CSV of task_key,family",
+        metavar="FILE",
+        help="TOML or JSON mapping of task_key (exact or glob) to family",
     )
     audit.add_argument(
         "-G",
@@ -145,7 +152,22 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
-    if args.command in {"audit", "simulate", "card"}:
+    if args.command == "audit":
+        try:
+            _family_assigner_from_audit_args(args)
+        except FamilyConfigError as exc:
+            parser.error(str(exc))
+        print(_NOT_IMPLEMENTED)
+        return 1
+    if args.command in {"simulate", "card"}:
         print(_NOT_IMPLEMENTED)
         return 1
     parser.error(f"unknown command: {args.command}")
+
+
+def _family_assigner_from_audit_args(args: argparse.Namespace) -> FamilyAssigner:
+    if args.family_map is not None:
+        config = FamilyConfig(mode="mapping", mapping_path=args.family_map)
+    else:
+        config = FamilyConfig()
+    return from_config(config)
