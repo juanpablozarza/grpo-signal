@@ -8,8 +8,12 @@ happens and suggests prime-rl config changes.
 
 ## Status
 
-Scaffold. Package layout, types, CLI shape, and checks are in place.
-Reading traces, estimation, simulation, and reports are not implemented yet.
+Package layout, types, CLI shape, and a synthetic prime-rl run fixture are in
+place. Reading traces, estimation, simulation, and reports are not implemented
+yet. Reader tests skip until those functions are filled in.
+
+The on-disk format the readers will consume is described in `docs/FORMAT.md`.
+A small fake run lives at `tests/fixtures/prime_run_small/`.
 
 ## Setup
 
@@ -26,6 +30,12 @@ uv run ruff check .
 uv run ruff format --check .
 uv run pyright
 uv run pytest
+```
+
+Rebuild the fake run (same output every time):
+
+```bash
+uv run python tests/fixtures/gen_prime_run.py
 ```
 
 ## CLI
