@@ -54,9 +54,57 @@ class EpisodeRow(TypedDict, total=False):
     env: str | EnvRef
     task: TaskPayload
     group: GroupRef
-    run: str
+    run: dict[str, object]
     ok: bool
     traces: list[TraceRow]
+
+
+DEAD_EPS = 1e-6
+"""Std below this counts as a dead group. prime-rl prunes on advantage == 0.0."""
+
+CORRECTNESS_HEAD = "correct"
+"""Named reward head used as the pass/fail score when present.
+
+prime-rl tests plant ``rewards={"correct": Reward(score=...)}``. Final reward is
+always ``Trace.reward`` (sum of score × weight), which differs from score when
+another head is present or a weight is not 1.
+"""
+
+
+@dataclass(kw_only=True)
+class TraceRecord:
+    """One trace after joining the episode stream with ship-time annotations."""
+
+    trace_id: str
+    score: float
+    """Correctness score. ``rewards["correct"].score`` when that head exists,
+    otherwise the first named head's score, otherwise ``trace.reward``."""
+    reward: float
+    """Final reward: the on-disk ``trace.reward`` computed field
+    (sum of each head's score × weight)."""
+    step: int | None
+    """``info.ship.step`` when effective, else ``info.arrival.step`` /
+    ``info.dispatch.step``."""
+    effective: bool
+    """True when an annotation record has ``info.effective`` true. A train
+    trace with no such annotation never trained."""
+
+
+@dataclass(kw_only=True)
+class GroupRecord:
+    """The G traces that share a dispatcher group id (one GRPO comparison).
+
+    Deadness is reported on both metrics. A group is dead on a metric when the
+    population std of that metric across ``traces`` is below ``DEAD_EPS``.
+    """
+
+    env: str
+    """``episode.env.name``, falling back to ``episode.env.id``."""
+    task_key: str
+    """``episode.task.key``, falling back to ``episode.task.hash``."""
+    group_id: str
+    """``episode.group.id`` (dispatcher stamps ``str(group_uuid)``)."""
+    traces: list[TraceRecord]
 
 
 @dataclass(kw_only=True)
